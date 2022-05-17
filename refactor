@@ -1,0 +1,46 @@
+import time
+import pandas as pd
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+def scraping_pages(url, xpath, file_csv):
+    driver = webdriver.Firefox()
+    driver.get(url)
+    time.sleep(2)
+    driver.find_element(By.XPATH, xpath).click()
+
+    conteudo = driver.page_source
+    soup     = BeautifulSoup(conteudo, "html.parser")
+    produtos = soup.findAll("div", class_="promotion-item__description")
+
+    lista = []
+
+    for produto in produtos:
+        preco = produto.find("span", class_="promotion-item__price")
+        nome = produto.find("p", class_="promotion-item__title")
+        lista.append([nome, preco])
+
+    produtos_dt = pd.DataFrame(lista, columns=["Nome", "Preço"])
+    produtos_dt.to_csv(file_csv, index=False)
+
+# part 1
+url   = "https://www.mercadolivre.com.br/"
+xpath = "/html/body/header/div/div[2]/ul/li[3]/a"
+file  = "arquivo.csv"
+
+scraping_pages(url, xpath, file)
+
+# part 2
+url   = "https://www.mercadolivre.com.br/ofertas#nav-header"
+xpath = "/html/body/main/div/section[1]/div/section/div/section/div[2]/div/div/div[9]/div"
+file  = "celulares.csv"
+
+scraping_pages(url, xpath, file)
+
+# part 3
+url   = "https://www.mercadolivre.com.br/ofertas#nav-header"
+xpath = "/html/body/main/div/section[1]/div/section/div/section/div[2]/div/div/div[10]/div"
+file  = "notebooks.csv"
+
+scraping_pages(url, xpath, file)
